@@ -167,19 +167,19 @@
         </button>
     </div>
 
-    <model-viewer
+  <model-viewer
         id="viewer"
         src="modelo.glb"
         alt="Render Industrial 3D"
         
-        /* 1. CONTROL DE LUCES Y ALTO CONTRASTE */
+        /* 1. CONTROL DE LUZ: Bajamos la exposición para eliminar el brillo exagerado y recuperar sombras internas */
         environment-image="neutral"
         tone-mapping="agx"            
-        exposure="0.95"               /* Subimos la exposición para que las luces e iluminaciones destaquen más */
+        exposure="0.55"               /* Al bajarlo a 0.55 el objeto deja de brillar y los huecos se oscurecen naturalmente */
         
-        /* 2. SOMBRAS MÁS INTENSAS Y VISIBLES */
-        shadow-intensity="2.5"        /* Incrementamos la fuerza de la sombra drásticamente */
-        shadow-softness="0.4"         /* Reducimos el difuminado para que la sombra se proyecte con más definición */
+        /* 2. SOMBRA DEL PISO: Regresa a ser suave y sutil como al principio */
+        shadow-intensity="1.8"        /* Intensidad original para el suelo */
+        shadow-softness="0.9"         /* Difuminado alto original para que no sea un parche negro */
         
         /* 3. LENTE TELEFOTO (Look KeyShot de ingeniería) */
         field-of-view="22deg"         
