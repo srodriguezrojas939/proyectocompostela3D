@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Studio Render 3D - Profesional</title>
+    <title>Studio Render 3D - Alto Contraste</title>
 
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -18,14 +18,12 @@
             -webkit-user-select: none;
         }
 
-        /* TRUCO KEYSHOT 1: El fondo no puede ser plano. 
-           Usamos un degradado radial sutil que simula un estudio fotográfico real (Infinity Backdrop) 
-           manteniendo la base de tu color #FBF4EC en el centro. */
+        /* Fondo de estudio fotográfico infinito */
         html, body {
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: radial-gradient(circle at center, #FBF4EC 30%, #FBF4EC 100%);
+            background: radial-gradient(circle at center, #FBF4EC 30%, #EFE3D3 100%);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
@@ -105,13 +103,13 @@
             display: flex;
             align-items: center;
             gap: 16px;
-            background: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.65);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             padding: 8px 14px;
             border-radius: 30px;
-            border: 1px solid rgba(74, 59, 50, 0.1);
-            box-shadow: 0 10px 30px rgba(74, 59, 50, 0.08);
+            border: 1px solid rgba(74, 59, 50, 0.15);
+            box-shadow: 0 10px 30px rgba(74, 59, 50, 0.12);
             z-index: 5;
         }
 
@@ -146,8 +144,8 @@
             letter-spacing: 3px;
             text-transform: uppercase;
             color: #5C4A3E;
-            font-weight: 600;
-            min-width: 100px;
+            font-weight: 700;
+            min-width: 130px;
             text-align: center;
         }
 
@@ -161,11 +159,11 @@
 
     <div class="model-switcher">
         <button class="switch-btn" id="prev-btn" title="Modelo Anterior">
-            <i data-lucide="chevron-left" stroke-width="2" size="18"></i>
+            <i data-lucide="chevron-left" stroke-width="2.5" size="18"></i>
         </button>
-        <div class="model-label" id="model-text">Modelo 1</div>
+        <div class="model-label" id="model-text">Tapa cerrada</div>
         <button class="switch-btn" id="next-btn" title="Siguiente Modelo">
-            <i data-lucide="chevron-right" stroke-width="2" size="18"></i>
+            <i data-lucide="chevron-right" stroke-width="2.5" size="18"></i>
         </button>
     </div>
 
@@ -174,33 +172,33 @@
         src="modelo.glb"
         alt="Render Industrial 3D"
         
-        /* 1. CONTROL DE LUCES Y TONO (Adiós al brillo exagerado) */
+        /* 1. CONTROL DE LUCES Y ALTO CONTRASTE */
         environment-image="neutral"
-        tone-mapping="agx"            /* AgX es el nuevo estándar de Blender 4+ para transiciones de luz ultra realistas */
-        exposure="0.68"               /* Bajamos la exposición drásticamente para que no se queme el blanco y se vean texturas */
+        tone-mapping="agx"            
+        exposure="0.95"               /* Subimos la exposición para que las luces e iluminaciones destaquen más */
         
-        /* 2. SOMBRAS DE CONTACTO ULTRA SUAVES */
-        shadow-intensity="1.8"        /* Sombra oscura justo debajo de la pieza */
-        shadow-softness="0.9"         /* Difuminado suave para que parezca luz de ventana/softbox */
+        /* 2. SOMBRAS MÁS INTENSAS Y VISIBLES */
+        shadow-intensity="2.5"        /* Incrementamos la fuerza de la sombra drásticamente */
+        shadow-softness="0.4"         /* Reducimos el difuminado para que la sombra se proyecte con más definición */
         
-        /* 3. TRUCO KEYSHOT 2: LENTE TELEFOTO (Menos distorsión) */
-        field-of-view="22deg"         /* Un FOV bajo aplana la perspectiva, dando ese look de catálogo de ingeniería */
+        /* 3. LENTE TELEFOTO (Look KeyShot de ingeniería) */
+        field-of-view="22deg"         
         camera-orbit="45deg 65deg auto"
-        interpolation-decay="25"      /* Movimiento de cámara súper fluido y pesado */
+        interpolation-decay="25"      
         camera-controls
         touch-action="none"
         
         /* 4. LÍMITES DE SEGURIDAD */
-        max-polar-angle="90deg"       /* Impide que el usuario mire la pieza desde abajo del suelo */
+        max-polar-angle="90deg"       
         min-camera-orbit="auto auto 1m"
         max-camera-orbit="auto auto 12m"
         
-        /* 5. GIRO AUTOMÁTICO ELEGANTE */
+        /* 5. GIRO AUTOMÁTICO */
         auto-rotate
         auto-rotate-delay="500"
-        rotation-per-second="8deg"    /* Giro lento y profesional, no un torbellino */
+        rotation-per-second="8deg"    
         
-        /* Opciones de Realidad Aumentada integradas */
+        /* Opciones de Realidad Aumentada */
         ar
         ar-modes="webxr scene-viewer quick-look">
 
@@ -223,30 +221,30 @@
         const nextBtn = document.getElementById('next-btn');
         const modelText = document.getElementById('model-text');
 
-        // Configuración de la lista de archivos de tu proyecto
+        // Configuración de la lista de archivos con tus nuevas etiquetas
         const modelsList = [
-            { src: 'modelo.glb', label: 'Modelo 1' },
-            { src: 'modelo2.glb', label: 'Modelo 2' }
+            { src: 'modelo.glb', label: 'Tapa cerrada' },
+            { src: 'modelo2.glb', label: 'Tapa abierta' }
         ];
         let currentModelIndex = 0;
 
         // Inicializar los iconos de Lucide
         lucide.createIcons();
 
-        // Función centralizada para alternar el modelo 3D
+        // Función para alternar el modelo 3D
         function changeModel(index) {
             currentModelIndex = index;
             
-            // 1. Mostrar la pantalla de carga e inicializar la barra a cero antes del cambio
+            // Re-activar pantalla de carga e inicializar barra
             loadingOverlay.classList.remove('hidden');
             progressBar.style.width = '0%';
             
-            // 2. Modificar el origen del archivo y actualizar la etiqueta de texto
+            // Actualizar origen de archivo y etiqueta de texto
             modelViewer.src = modelsList[currentModelIndex].src;
             modelText.innerText = modelsList[currentModelIndex].label;
         }
 
-        // Listeners para los botones de las flechas
+        // Listeners para las flechas de navegación
         prevBtn.addEventListener('click', () => {
             let nextIndex = currentModelIndex - 1;
             if (nextIndex < 0) nextIndex = modelsList.length - 1;
@@ -258,7 +256,7 @@
             changeModel(nextIndex);
         });
 
-        // Control del porcentaje de carga del archivo .glb actual
+        // Control de porcentaje de carga
         modelViewer.addEventListener('progress', (event) => {
             const progress = event.detail.totalProgress * 100;
             progressBar.style.width = `${progress}%`;
@@ -270,7 +268,7 @@
             }
         });
 
-        // Doble verificación para ocultar la carga cuando el motor 3D esté listo
+        // Ocultar carga cuando esté completamente listo el render
         modelViewer.addEventListener('load', () => {
             loadingOverlay.classList.add('hidden');
         });
