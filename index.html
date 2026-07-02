@@ -6,6 +6,7 @@
     <title>Studio Render 3D - Profesional</title>
 
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
         /* Reset total de márgenes */
@@ -34,7 +35,6 @@
             height: 100vh;
             display: block;
             contain: strict;
-            /* Hacemos que el fondo de model-viewer sea transparente para que use nuestro degradado CSS */
             background-color: transparent; 
             --poster-color: transparent;
         }
@@ -96,6 +96,61 @@
             transition: width 0.15s ease-out;
         }
 
+        /* INTERFAZ DEL INTERCAMBIADOR DE MODELOS Premium */
+        .model-switcher {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 8px 14px;
+            border-radius: 30px;
+            border: 1px solid rgba(74, 59, 50, 0.1);
+            box-shadow: 0 10px 30px rgba(74, 59, 50, 0.08);
+            z-index: 5;
+        }
+
+        .switch-btn {
+            background-color: #FFFFFF;
+            border: 1px solid rgba(74, 59, 50, 0.15);
+            color: #5C4A3E;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+
+        .switch-btn:hover {
+            background-color: #5C4A3E;
+            color: #FBF4EC;
+            border-color: #5C4A3E;
+            transform: scale(1.05);
+        }
+
+        .switch-btn:active {
+            transform: scale(0.95);
+        }
+
+        .model-label {
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #5C4A3E;
+            font-weight: 600;
+            min-width: 100px;
+            text-align: center;
+        }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -104,7 +159,18 @@
 </head>
 <body>
 
+    <div class="model-switcher">
+        <button class="switch-btn" id="prev-btn" title="Modelo Anterior">
+            <i data-lucide="chevron-left" stroke-width="2" size="18"></i>
+        </button>
+        <div class="model-label" id="model-text">Modelo 1</div>
+        <button class="switch-btn" id="next-btn" title="Siguiente Modelo">
+            <i data-lucide="chevron-right" stroke-width="2" size="18"></i>
+        </button>
+    </div>
+
     <model-viewer
+        id="viewer"
         src="modelo.glb"
         alt="Render Industrial 3D"
         
@@ -149,11 +215,50 @@
     </model-viewer>
 
     <script>
-        const modelViewer = document.querySelector('model-viewer');
+        const modelViewer = document.getElementById('viewer');
         const progressBar = document.getElementById('bar');
         const loadingOverlay = document.getElementById('custom-loading');
+        
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const modelText = document.getElementById('model-text');
 
-        // Control del porcentaje de carga del archivo .glb
+        // Configuración de la lista de archivos de tu proyecto
+        const modelsList = [
+            { src: 'modelo.glb', label: 'Modelo 1' },
+            { src: 'modelo2.glb', label: 'Modelo 2' }
+        ];
+        let currentModelIndex = 0;
+
+        // Inicializar los iconos de Lucide
+        lucide.createIcons();
+
+        // Función centralizada para alternar el modelo 3D
+        function changeModel(index) {
+            currentModelIndex = index;
+            
+            // 1. Mostrar la pantalla de carga e inicializar la barra a cero antes del cambio
+            loadingOverlay.classList.remove('hidden');
+            progressBar.style.width = '0%';
+            
+            // 2. Modificar el origen del archivo y actualizar la etiqueta de texto
+            modelViewer.src = modelsList[currentModelIndex].src;
+            modelText.innerText = modelsList[currentModelIndex].label;
+        }
+
+        // Listeners para los botones de las flechas
+        prevBtn.addEventListener('click', () => {
+            let nextIndex = currentModelIndex - 1;
+            if (nextIndex < 0) nextIndex = modelsList.length - 1;
+            changeModel(nextIndex);
+        });
+
+        nextBtn.addEventListener('click', () => {
+            let nextIndex = (currentModelIndex + 1) % modelsList.length;
+            changeModel(nextIndex);
+        });
+
+        // Control del porcentaje de carga del archivo .glb actual
         modelViewer.addEventListener('progress', (event) => {
             const progress = event.detail.totalProgress * 100;
             progressBar.style.width = `${progress}%`;
