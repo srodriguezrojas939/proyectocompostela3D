@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Studio Render 3D - Alto Contraste</title>
+    <title>Studio Render 3D - Control Avanzado</title>
 
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -40,122 +40,145 @@
         /* Pantalla de carga integrada elegante */
         .loading-overlay {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #FBF4EC 30%, #EFE3D3 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            opacity: 1;
-            transition: opacity 0.4s ease-in-out;
-            z-index: 10;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            opacity: 1; transition: opacity 0.4s ease-in-out; z-index: 10;
         }
+        .loading-overlay.hidden { opacity: 0; pointer-events: none; }
 
-        .loading-overlay.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        /* Spinner estilo minimalista premium */
         .spinner {
-            width: 40px;
-            height: 40px;
+            width: 40px; height: 40px;
             border: 2px solid rgba(74, 59, 50, 0.08);
             border-top: 2px solid #5C4A3E;
             border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-            margin-bottom: 16px;
+            animation: spin 0.6s linear infinite; margin-bottom: 16px;
         }
-
-        .loading-title {
-            font-size: 11px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: #5C4A3E;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .progress-container {
-            width: 120px;
-            height: 2px;
-            background-color: rgba(74, 59, 50, 0.08);
-            border-radius: 1px;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            width: 0%;
-            height: 100%;
-            background-color: #5C4A3E;
-            transition: width 0.15s ease-out;
-        }
+        .loading-title { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #5C4A3E; font-weight: 600; margin-bottom: 10px; }
+        .progress-container { width: 120px; height: 2px; background-color: rgba(74, 59, 50, 0.08); border-radius: 1px; overflow: hidden; }
+        .progress-bar { width: 0%; height: 100%; background-color: #5C4A3E; transition: width 0.15s ease-out; }
 
         /* INTERFAZ DEL INTERCAMBIADOR DE MODELOS Premium */
         .model-switcher {
-            position: absolute;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            background: rgba(255, 255, 255, 0.65);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 8px 14px;
-            border-radius: 30px;
-            border: 1px solid rgba(74, 59, 50, 0.15);
-            box-shadow: 0 10px 30px rgba(74, 59, 50, 0.12);
-            z-index: 5;
+            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+            display: flex; align-items: center; gap: 16px;
+            background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 8px 14px; border-radius: 30px; border: 1px solid rgba(74, 59, 50, 0.15);
+            box-shadow: 0 10px 30px rgba(74, 59, 50, 0.12); z-index: 5;
         }
-
         .switch-btn {
-            background-color: #FFFFFF;
-            border: 1px solid rgba(74, 59, 50, 0.15);
-            color: #5C4A3E;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            background-color: #FFFFFF; border: 1px solid rgba(74, 59, 50, 0.15); color: #5C4A3E;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px; border-radius: 50%;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+        .switch-btn:hover { background-color: #5C4A3E; color: #FBF4EC; border-color: #5C4A3E; transform: scale(1.05); }
+        .switch-btn:active { transform: scale(0.95); }
+        .model-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #5C4A3E; font-weight: 700; min-width: 130px; text-align: center; }
+
+        /* BOTÓN DE CONFIGURACIÓN ORIGINAL (LUCIDE) */
+        .config-trigger {
+            position: absolute; top: 20px; right: 20px; z-index: 6;
         }
 
-        .switch-btn:hover {
-            background-color: #5C4A3E;
-            color: #FBF4EC;
-            border-color: #5C4A3E;
-            transform: scale(1.05);
+        /* PANEL DE CONFIGURACIÓN DESPLEGABLE */
+        .config-panel {
+            position: absolute; top: 70px; right: 20px; width: 280px;
+            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(74, 59, 50, 0.15); border-radius: 16px;
+            padding: 20px; box-shadow: 0 15px 35px rgba(74, 59, 50, 0.15);
+            z-index: 5; display: flex; flex-direction: column; gap: 18px;
+            opacity: 0; transform: translateY(-10px); pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .config-panel.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+        .config-section-title {
+            font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+            color: #5C4A3E; font-weight: 700; margin-bottom: 6px; border-bottom: 1px solid rgba(74, 59, 50, 0.1); padding-bottom: 4px;
         }
 
-        .switch-btn:active {
-            transform: scale(0.95);
-        }
+        /* Controles deslizantes deslizantes */
+        .control-group { display: flex; flex-direction: column; gap: 4px; }
+        .control-label { display: flex; justify-content: space-between; font-size: 11px; color: #5C4A3E; font-weight: 600; }
+        .control-label span:last-child { font-weight: 400; opacity: 0.8; }
+        input[type="range"] { width: 100%; accent-color: #5C4A3E; cursor: pointer; height: 4px; border-radius: 2px; }
 
-        .model-label {
-            font-size: 10px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: #5C4A3E;
-            font-weight: 700;
-            min-width: 130px;
-            text-align: center;
+        /* Rejilla de botones para vistas */
+        .views-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .view-btn {
+            background: #FFFFFF; border: 1px solid rgba(74, 59, 50, 0.15);
+            padding: 6px; border-radius: 6px; font-size: 10px; font-weight: 600;
+            color: #5C4A3E; cursor: pointer; text-align: center; transition: all 0.2s;
         }
+        .view-btn:hover { background: #5C4A3E; color: #FBF4EC; }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        /* Interruptor de animación (Switch) */
+        .switch-group { display: flex; justify-content: space-between; align-items: center; }
+        .switch {
+            position: relative; display: inline-block; width: 38px; height: 20px;
         }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(74, 59, 50, 0.2); transition: .3s; border-radius: 20px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
+            background-color: white; transition: .3s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #5C4A3E; }
+        input:checked + .slider:before { transform: translateX(18px); }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+
+    <button class="switch-btn config-trigger" id="config-btn" title="Configuración de Renderizado">
+        <i data-lucide="settings" stroke-width="2" size="18"></i>
+    </button>
+
+    <div class="config-panel" id="config-panel">
+        <div class="control-group">
+            <div class="config-section-title">Estudio Lumínico</div>
+            <div class="control-label">
+                <span>Exposición (Brillo)</span>
+                <span id="val-exposure">0.55</span>
+            </div>
+            <input type="range" id="input-exposure" min="0.2" max="1.5" step="0.05" value="0.55">
+        </div>
+
+        <div class="control-group">
+            <div class="control-label">
+                <span>Sombras del Objeto</span>
+                <span id="val-shadow">1.80</span>
+            </div>
+            <input type="range" id="input-shadow" min="0" max="4" step="0.1" value="1.8">
+        </div>
+
+        <div>
+            <div class="config-section-title">Vistas de Cámara</div>
+            <div class="views-grid">
+                <button class="view-btn" onclick="setCamera('0deg 90deg auto')">Frontal</button>
+                <button class="view-btn" onclick="setCamera('0deg 0deg auto')">Superior</button>
+                <button class="view-btn" onclick="setCamera('90deg 90deg auto')">Lateral D</button>
+                <button class="view-btn" onclick="setCamera('-90deg 90deg auto')">Lateral I</button>
+                <button class="view-btn" onclick="setCamera('0deg 180deg auto')">Inferior</button>
+                <button class="view-btn" onclick="setCamera('45deg 65deg auto')">Persp.</button>
+            </div>
+        </div>
+
+        <div class="switch-group">
+            <div class="control-label" style="flex-direction: column; gap: 0;">
+                <span>Rotación Automática</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="input-autorotate" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
 
     <div class="model-switcher">
         <button class="switch-btn" id="prev-btn" title="Modelo Anterior">
@@ -167,38 +190,33 @@
         </button>
     </div>
 
-  <model-viewer
+    <model-viewer
         id="viewer"
         src="modelo.glb"
         alt="Render Industrial 3D"
         
-        /* 1. CONTROL DE LUZ: Bajamos la exposición para eliminar el brillo exagerado y recuperar sombras internas */
+        /* CONTROL DE LUZ INICIAL EQUILIBRADO (Sombra interna alta, sin quemarse) */
         environment-image="neutral"
         tone-mapping="agx"            
-        exposure="0.55"               /* Al bajarlo a 0.55 el objeto deja de brillar y los huecos se oscurecen naturalmente */
+        exposure="0.55"               
+        shadow-intensity="1.8"        
+        shadow-softness="0.9"         
         
-        /* 2. SOMBRA DEL PISO: Regresa a ser suave y sutil como al principio */
-        shadow-intensity="1.8"        /* Intensidad original para el suelo */
-        shadow-softness="0.9"         /* Difuminado alto original para que no sea un parche negro */
-        
-        /* 3. LENTE TELEFOTO (Look KeyShot de ingeniería) */
+        /* LENTE TELEFOTO (Look KeyShot) */
         field-of-view="22deg"         
         camera-orbit="45deg 65deg auto"
         interpolation-decay="25"      
         camera-controls
         touch-action="none"
         
-        /* 4. LÍMITES DE SEGURIDAD */
-        max-polar-angle="90deg"       
+        max-polar-angle="180deg"      /* Permitimos libre rotación completa para poder ver la vista inferior */
         min-camera-orbit="auto auto 1m"
         max-camera-orbit="auto auto 12m"
         
-        /* 5. GIRO AUTOMÁTICO */
         auto-rotate
         auto-rotate-delay="500"
         rotation-per-second="8deg"    
         
-        /* Opciones de Realidad Aumentada */
         ar
         ar-modes="webxr scene-viewer quick-look">
 
@@ -221,30 +239,72 @@
         const nextBtn = document.getElementById('next-btn');
         const modelText = document.getElementById('model-text');
 
-        // Configuración de la lista de archivos con tus nuevas etiquetas
+        // Referencias de Configuración
+        const configBtn = document.getElementById('config-btn');
+        const configPanel = document.getElementById('config-panel');
+        const inputExposure = document.getElementById('input-exposure');
+        const inputShadow = document.getElementById('input-shadow');
+        const inputAutoRotate = document.getElementById('input-autorotate');
+        
+        const valExposure = document.getElementById('val-exposure');
+        const valShadow = document.getElementById('val-shadow');
+
         const modelsList = [
             { src: 'modelo.glb', label: 'Tapa cerrada' },
             { src: 'modelo2.glb', label: 'Tapa abierta' }
         ];
         let currentModelIndex = 0;
 
-        // Inicializar los iconos de Lucide
+        // Inicializar iconos
         lucide.createIcons();
 
-        // Función para alternar el modelo 3D
+        // 1. Mostrar/Ocultar Panel de Configuración
+        configBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            configPanel.classList.toggle('open');
+        });
+
+        // Cerrar panel si se hace click fuera en el lienzo
+        modelViewer.addEventListener('click', () => {
+            configPanel.classList.remove('open');
+        });
+
+        // 2. Controladores en Tiempo Real del Panel de Configuración
+        inputExposure.addEventListener('input', (e) => {
+            const val = e.target.value;
+            modelViewer.exposure = val;
+            valExposure.innerText = parseFloat(val).toFixed(2);
+        });
+
+        inputShadow.addEventListener('input', (e) => {
+            const val = e.target.value;
+            modelViewer.shadowIntensity = val;
+            valShadow.innerText = parseFloat(val).toFixed(2);
+        });
+
+        inputAutoRotate.addEventListener('change', (e) => {
+            if(e.target.checked) {
+                modelViewer.setAttribute('auto-rotate', '');
+            } else {
+                modelViewer.removeAttribute('auto-rotate');
+            }
+        });
+
+        // 3. Función para cambiar posiciones de Cámara fijas
+        window.setCamera = function(orbitString) {
+            modelViewer.cameraOrbit = orbitString;
+            modelViewer.jumpCameraToGoal(); // Forzar encuadre inmediato de la vista
+        };
+
+        // 4. Intercambiador de modelos
         function changeModel(index) {
             currentModelIndex = index;
-            
-            // Re-activar pantalla de carga e inicializar barra
             loadingOverlay.classList.remove('hidden');
             progressBar.style.width = '0%';
-            
-            // Actualizar origen de archivo y etiqueta de texto
             modelViewer.src = modelsList[currentModelIndex].src;
             modelText.innerText = modelsList[currentModelIndex].label;
         }
 
-        // Listeners para las flechas de navegación
         prevBtn.addEventListener('click', () => {
             let nextIndex = currentModelIndex - 1;
             if (nextIndex < 0) nextIndex = modelsList.length - 1;
@@ -256,19 +316,15 @@
             changeModel(nextIndex);
         });
 
-        // Control de porcentaje de carga
+        // Barra de carga
         modelViewer.addEventListener('progress', (event) => {
             const progress = event.detail.totalProgress * 100;
             progressBar.style.width = `${progress}%`;
-            
             if (progress >= 100) {
-                setTimeout(() => {
-                    loadingOverlay.classList.add('hidden');
-                }, 200);
+                setTimeout(() => { loadingOverlay.classList.add('hidden'); }, 200);
             }
         });
 
-        // Ocultar carga cuando esté completamente listo el render
         modelViewer.addEventListener('load', () => {
             loadingOverlay.classList.add('hidden');
         });
