@@ -1,33 +1,172 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Visor 3D Pro - Model Viewer Studio</title>
 
-  <style>
-    body{
-      margin:0;
-      background:#f5f5f5;
-    }
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
-    model-viewer{
-      width:100vw;
-      height:100vh;
-    }
-  </style>
+    <style>
+        /* Variables de diseño unificadas */
+        :root {
+            --bg-color: #FBF4EC;
+            --accent-color: #4A3B32;
+            --text-muted: #8C7A6B;
+        }
+
+        /* Configuración base para pantalla completa limpia */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Contenedor del Visor 3D */
+        model-viewer {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+            contain: strict;
+            /* Color de transición interno del visor */
+            --poster-color: var(--bg-color); 
+        }
+
+        /* Pantalla de carga integrada avanzada estilo KeyShot */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+            z-index: 10;
+        }
+
+        /* Ocultar pantalla de carga suavemente al finalizar */
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Spinner minimalista industrial */
+        .spinner {
+            width: 44px;
+            height: 44px;
+            border: 3px solid rgba(74, 59, 50, 0.1);
+            border-top: 3px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .loading-title {
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent-color);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        /* Barra de progreso fluida */
+        .progress-container {
+            width: 140px;
+            height: 2px;
+            background-color: rgba(74, 59, 50, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: var(--accent-color);
+            transition: width 0.2s ease-out;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-
 <body>
 
-<model-viewer
-  src="modelo.glb"
-  alt="Modelo 3D"
-  auto-rotate
-  camera-controls
-  shadow-intensity="1"
-  exposure="1"
-  ar>
-</model-viewer>
+    <model-viewer
+        src="modelo.glb"
+        alt="Renderizado 3D de alta precisión"
+        
+        /* 1. CONFIGURACIÓN CINEMÁTICA Y ÓPTICA */
+        camera-controls
+        touch-action="none"
+        interpolation-decay="20"
+        camera-orbit="45deg 75deg auto"
+        field-of-view="30deg"
+        
+        /* 2. RESTRICCIONES DE CÁMARA (Evita que rompan el suelo o se alejen infinito) */
+        max-polar-angle="92deg"
+        min-camera-orbit="auto auto 1m"
+        max-camera-orbit="auto auto 15m"
+        
+        /* 3. MEJORAS DE ILUMINACIÓN Y RENDER ESTILO BLENDER/KEYSHOT */
+        shadow-intensity="1.6"
+        shadow-softness="0.7"
+        exposure="1.15"
+        environment-image="neutral"
+        
+        /* 4. ANIMACIÓN DE GIRO AUTOMÁTICO SUAVE */
+        auto-rotate
+        auto-rotate-delay="1000"
+        rotation-per-second="10deg"
+        
+        /* 5. SOPORTE DE REALIDAD AUMENTADA */
+        ar
+        ar-modes="webxr scene-viewer quick-look">
+
+        <div slot="poster" id="custom-loading" class="loading-overlay">
+            <div class="spinner"></div>
+            <div class="loading-title">Procesando Geometría</div>
+            <div class="progress-container">
+                <div id="bar" class="progress-bar"></div>
+            </div>
+        </div>
+
+    </model-viewer>
+
+    <script>
+        const modelViewer = document.querySelector('model-viewer');
+        const progressBar = document.getElementById('bar');
+        const loadingOverlay = document.getElementById('custom-loading');
+
+        // Escucha el progreso de descarga directo del archivo binario GLB
+        modelViewer.addEventListener('progress', (event) => {
+            const progress = event.detail.totalProgress * 100;
+            progressBar.style.width = `${progress}%`;
+            
+            // Cuando llega al 100%, desvanece la pantalla de carga con suavidad
+            if (progress >= 100) {
+                setTimeout(() => {
+                    loadingOverlay.classList.add('hidden');
+                }, 300);
+            }
+        });
+
+        // Fallback de seguridad por si el modelo ya estaba en la caché del navegador
+        modelViewer.addEventListener('load', () => {
+            loadingOverlay.classList.add('hidden');
+        });
+    </script>
 
 </body>
 </html>
