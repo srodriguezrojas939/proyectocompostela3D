@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Studio Render 3D - Control Avanzado</title>
 
+    <!-- Scripts del Motor 3D y Lucide Icons -->
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Fuente Oswald de Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         /* Reset total de márgenes */
@@ -18,13 +22,13 @@
             -webkit-user-select: none;
         }
 
-        /* Fondo de estudio fotográfico infinito */
+        /* Fondo de estudio fotográfico plano solicitado */
         html, body {
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: radial-gradient(circle at center, #FBF4EC 30%, #EFE3D3 100%);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #FBF4EC;
+            font-family: 'Oswald', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         /* Contenedor del render 3D */
@@ -41,7 +45,7 @@
         .loading-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #FBF4EC 30%, #EFE3D3 100%);
+            background: #FBF4EC;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             opacity: 1; transition: opacity 0.4s ease-in-out; z-index: 10;
         }
@@ -74,7 +78,7 @@
         }
         .switch-btn:hover { background-color: #5C4A3E; color: #FBF4EC; border-color: #5C4A3E; transform: scale(1.05); }
         .switch-btn:active { transform: scale(0.95); }
-        .model-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #5C4A3E; font-weight: 700; min-width: 130px; text-align: center; }
+        .model-label { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #5C4A3E; font-weight: 700; min-width: 130px; text-align: center; }
 
         /* BOTÓN DE CONFIGURACIÓN ORIGINAL (LUCIDE) */
         .config-trigger {
@@ -98,9 +102,9 @@
             color: #5C4A3E; font-weight: 700; margin-bottom: 6px; border-bottom: 1px solid rgba(74, 59, 50, 0.1); padding-bottom: 4px;
         }
 
-        /* Controles deslizantes deslizantes */
+        /* Controles deslizantes */
         .control-group { display: flex; flex-direction: column; gap: 4px; }
-        .control-label { display: flex; justify-content: space-between; font-size: 11px; color: #5C4A3E; font-weight: 600; }
+        .control-label { display: flex; justify-content: space-between; font-size: 12px; color: #5C4A3E; font-weight: 600; }
         .control-label span:last-child { font-weight: 400; opacity: 0.8; }
         input[type="range"] { width: 100%; accent-color: #5C4A3E; cursor: pointer; height: 4px; border-radius: 2px; }
 
@@ -108,7 +112,7 @@
         .views-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
         .view-btn {
             background: #FFFFFF; border: 1px solid rgba(74, 59, 50, 0.15);
-            padding: 6px; border-radius: 6px; font-size: 10px; font-weight: 600;
+            padding: 6px; border-radius: 6px; font-family: 'Oswald', sans-serif; font-size: 11px; font-weight: 600;
             color: #5C4A3E; cursor: pointer; text-align: center; transition: all 0.2s;
         }
         .view-btn:hover { background: #5C4A3E; color: #FBF4EC; }
@@ -135,11 +139,14 @@
 </head>
 <body>
 
+    <!-- BOTÓN DISPARADOR DE CONFIGURACIÓN -->
     <button class="switch-btn config-trigger" id="config-btn" title="Configuración de Renderizado">
         <i data-lucide="settings" stroke-width="2" size="18"></i>
     </button>
 
+    <!-- PANEL DE CONFIGURACIÓN -->
     <div class="config-panel" id="config-panel">
+        <!-- SECCIÓN LUCES Y SOMBRAS -->
         <div class="control-group">
             <div class="config-section-title">Estudio Lumínico</div>
             <div class="control-label">
@@ -157,6 +164,7 @@
             <input type="range" id="input-shadow" min="0" max="4" step="0.1" value="1.8">
         </div>
 
+        <!-- SECCIÓN CÁMARAS -->
         <div>
             <div class="config-section-title">Vistas de Cámara</div>
             <div class="views-grid">
@@ -169,6 +177,7 @@
             </div>
         </div>
 
+        <!-- SECCIÓN DINÁMICA -->
         <div class="switch-group">
             <div class="control-label" style="flex-direction: column; gap: 0;">
                 <span>Rotación Automática</span>
@@ -180,6 +189,7 @@
         </div>
     </div>
 
+    <!-- INTERRUPTOR DE MODELOS -->
     <div class="model-switcher">
         <button class="switch-btn" id="prev-btn" title="Modelo Anterior">
             <i data-lucide="chevron-left" stroke-width="2.5" size="18"></i>
@@ -269,16 +279,16 @@
             configPanel.classList.remove('open');
         });
 
-        // 2. Controladores en Tiempo Real del Panel de Configuración
+        // 2. Controladores en Tiempo Real del Panel de Configuración (Corrección del bug de Brillo acumulativo)
         inputExposure.addEventListener('input', (e) => {
             const val = e.target.value;
-            modelViewer.exposure = val;
+            modelViewer.setAttribute('exposure', val);
             valExposure.innerText = parseFloat(val).toFixed(2);
         });
 
         inputShadow.addEventListener('input', (e) => {
             const val = e.target.value;
-            modelViewer.shadowIntensity = val;
+            modelViewer.setAttribute('shadow-intensity', val);
             valShadow.innerText = parseFloat(val).toFixed(2);
         });
 
@@ -290,8 +300,14 @@
             }
         });
 
-        // 3. Función para cambiar posiciones de Cámara fijas
+        // 3. Función para cambiar posiciones de Cámara fijas y detener la animación
         window.setCamera = function(orbitString) {
+            // Detener la rotación automática en el visor
+            modelViewer.removeAttribute('auto-rotate');
+            // Desmarcar el switch de rotación en el panel
+            inputAutoRotate.checked = false;
+            
+            // Aplicar la vista de cámara
             modelViewer.cameraOrbit = orbitString;
             modelViewer.jumpCameraToGoal(); // Forzar encuadre inmediato de la vista
         };
