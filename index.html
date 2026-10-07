@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visor 3D | Proyecto Compostera</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231C4587'/%3E%3Cpath d='M16 6l8 4.5v9L16 24l-8-4.5v-9L16 6z' fill='none' stroke='%232DAAE4' stroke-width='1.8' stroke-linejoin='round'/%3E%3Cpath d='M16 16l8-5.5M16 16v8M16 16L8 10.5' fill='none' stroke='%232DAAE4' stroke-width='1.8' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+  <style>
+    /* ============================================================
+       Visor 3D autónomo — Proyecto Compostera
+       Página de una sola vista: solo el contenedor del visor.
+       Todo el CSS vive en este mismo archivo.
+       ============================================================ */
+
+    :root {
+      --green-dark: #103F19;
+      --green-accent: #AAC240;
+      --cream: #FBF4EC;
+
+      --green-tint: #EDF2DA;
+      --ink: #0E1F12;
+      --muted: #56705B;
+      --white: #FFFFFF;
+
+      --line: rgba(16, 63, 25, 0.14);
+      --line-strong: rgba(16, 63, 25, 0.3);
+
+      --font-body: "Inter", system-ui, -apple-system, sans-serif;
+      --font-mono: "IBM Plex Mono", "SFMono-Regular", monospace;
+
+      --radius: 16px;
+      --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+      --shadow-soft: 0 18px 50px rgba(16, 63, 25, 0.1);
+      --shadow-strong: 0 24px 70px rgba(10, 42, 17, 0.22);
+    }
+
+    /* ---------- Ensamble theme (azul) ---------- */
+
+    .ensamble-page {
+      --green-dark: #1C4587;
+      --green-accent: #2DAAE4;
+      --green-tint: #E4F0FB;
+      --ink: #0F1E33;
+      --muted: #5A6C8A;
+      --line: rgba(28, 69, 135, 0.14);
+      --line-strong: rgba(28, 69, 135, 0.3);
+      --shadow-soft: 0 18px 50px rgba(28, 69, 135, 0.1);
+      --shadow-strong: 0 24px 70px rgba(10, 30, 60, 0.22);
+    }
+
+    /* ---------- Reset & base ---------- */
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: var(--font-body);
+      font-size: 1rem;
+      line-height: 1.65;
+      color: var(--ink);
+      background: var(--cream);
+      overflow-x: hidden;
+    }
+
+    img,
+    svg,
+    video {
+      display: block;
+      max-width: 100%;
+    }
+
+    button {
+      font: inherit;
+      color: inherit;
+      background: none;
+      border: 0;
+      cursor: pointer;
+    }
+
+    ::selection {
+      background: var(--green-accent);
+      color: var(--green-dark);
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--green-accent);
+      outline-offset: 3px;
+    }
+
+    /* ---------- Layout: pantalla completa ---------- */
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      overflow: hidden;
+    }
+
+    main {
+      height: 100vh;
+      height: 100dvh;
+      width: 100%;
+    }
+
+    .modelo3d__stage {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ---------- Modelo 3D ---------- */
+
+    .modelo3d__stage {
+      position: relative;
+      background: var(--cream);
+      overflow: hidden;
+    }
+
+    .modelo3d__stage model-viewer {
+      width: 100%;
+      height: 100%;
+      display: block;
+      --poster-color: transparent;
+      background-color: var(--cream);
+    }
+
+    .modelo3d__loading {
+      position: absolute;
+      inset: 0;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      opacity: 1;
+      transition: opacity 0.4s var(--ease);
+      z-index: 10;
+    }
+
+    .modelo3d__loading.is-hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .modelo3d__spinner {
+      width: 40px;
+      height: 40px;
+      border: 2px solid rgba(16, 63, 25, 0.1);
+      border-top: 2px solid var(--green-dark);
+      border-radius: 50%;
+      animation: m3d-spin 0.6s linear infinite;
+    }
+
+    .modelo3d__loading-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--green-dark);
+      font-weight: 600;
+    }
+
+    .modelo3d__progress-track {
+      width: 160px;
+      height: 3px;
+      background-color: rgba(16, 63, 25, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .modelo3d__progress-bar {
+      width: 0%;
+      height: 100%;
+      background-color: var(--green-accent);
+      transition: width 0.15s ease-out;
+    }
+
+    @keyframes m3d-spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .modelo3d__switcher {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.7);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      box-shadow: var(--shadow-soft);
+      z-index: 5;
+    }
+
+    .modelo3d__switch-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--white);
+      border: 1px solid var(--line-strong);
+      color: var(--green-dark);
+      cursor: pointer;
+      transition: background 0.25s var(--ease), color 0.25s var(--ease),
+        border-color 0.25s var(--ease), transform 0.25s var(--ease);
+    }
+
+    .modelo3d__switch-btn:hover {
+      background: var(--green-dark);
+      border-color: var(--green-dark);
+      color: var(--cream);
+      transform: scale(1.05);
+    }
+
+    .modelo3d__switch-btn:active {
+      transform: scale(0.95);
+    }
+
+    .modelo3d__model-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--green-dark);
+      font-weight: 700;
+      min-width: 130px;
+      text-align: center;
+    }
+
+    .modelo3d__config-trigger {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 6;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.7);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-soft);
+      color: var(--green-dark);
+      cursor: pointer;
+      transition: background 0.25s var(--ease), color 0.25s var(--ease),
+        border-color 0.25s var(--ease), transform 0.25s var(--ease);
+    }
+
+    .modelo3d__config-trigger:hover {
+      background: var(--green-dark);
+      border-color: var(--green-dark);
+      color: var(--cream);
+      transform: scale(1.05);
+    }
+
+    .modelo3d__config-panel {
+      position: absolute;
+      top: 66px;
+      right: 14px;
+      width: min(280px, calc(100% - 28px));
+      background: rgba(255, 255, 255, 0.85);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--line);
+      border-radius: calc(var(--radius) * 1.1);
+      padding: 18px;
+      box-shadow: var(--shadow-strong);
+      z-index: 6;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      opacity: 0;
+      transform: translateY(-8px);
+      pointer-events: none;
+      transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
+    }
+
+    .modelo3d__config-panel.is-open {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .modelo3d__config-title {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--green-dark);
+      font-weight: 700;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+    }
+
+    .modelo3d__control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .modelo3d__control-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      font-size: 12px;
+      color: var(--green-dark);
+      font-weight: 600;
+    }
+
+    .modelo3d__control-label span:last-child {
+      font-weight: 400;
+      opacity: 0.8;
+    }
+
+    .modelo3d__config-panel input[type="range"] {
+      width: 100%;
+      accent-color: var(--green-dark);
+      cursor: pointer;
+    }
+
+    .modelo3d__views-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .modelo3d__view-btn {
+      background: var(--white);
+      border: 1px solid var(--line-strong);
+      padding: 7px 4px;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--green-dark);
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.2s var(--ease), color 0.2s var(--ease),
+        border-color 0.2s var(--ease);
+    }
+
+    .modelo3d__view-btn:hover {
+      background: var(--green-dark);
+      border-color: var(--green-dark);
+      color: var(--cream);
+    }
+
+    .modelo3d__switch-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modelo3d__switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 21px;
+    }
+
+    .modelo3d__switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .modelo3d__slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(16, 63, 25, 0.2);
+      transition: 0.3s;
+      border-radius: 20px;
+    }
+
+    .modelo3d__slider::before {
+      position: absolute;
+      content: "";
+      height: 15px;
+      width: 15px;
+      left: 3px;
+      bottom: 3px;
+      background-color: var(--white);
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+
+    .modelo3d__switch input:checked + .modelo3d__slider {
+      background-color: var(--green-dark);
+    }
+
+    .modelo3d__switch input:checked + .modelo3d__slider::before {
+      transform: translateX(19px);
+    }
+
+    @media (max-width: 640px) {
+      .modelo3d__switcher {
+        bottom: 12px;
+        gap: 8px;
+      }
+      .modelo3d__model-label {
+        min-width: 96px;
+        font-size: 10px;
+        letter-spacing: 2px;
+      }
+      .modelo3d__switch-btn {
+        width: 34px;
+        height: 34px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .modelo3d__spinner {
+        animation-duration: 1.6s;
+      }
+    }
+  </style>
+</head>
+<body class="ensamble-page">
+  <main>
+    <div class="modelo3d__stage">
+      <button class="modelo3d__config-trigger" type="button" data-m3d-config-toggle aria-label="Configuración de renderizado">
+        <i data-lucide="settings" aria-hidden="true"></i>
+      </button>
+
+      <div class="modelo3d__config-panel" data-m3d-config-panel>
+        <div class="modelo3d__control-group">
+          <p class="modelo3d__config-title">Estudio lumínico</p>
+          <div class="modelo3d__control-label">
+            <span>Exposición (brillo)</span>
+            <span data-m3d-val="exposure">0.55</span>
+          </div>
+          <input type="range" data-m3d-input="exposure" min="0.2" max="1.5" step="0.05" value="0.55" />
+        </div>
+        <div class="modelo3d__control-group">
+          <div class="modelo3d__control-label">
+            <span>Sombras del objeto</span>
+            <span data-m3d-val="shadow">1.80</span>
+          </div>
+          <input type="range" data-m3d-input="shadow" min="0" max="4" step="0.1" value="1.8" />
+        </div>
+        <div>
+          <p class="modelo3d__config-title">Vistas de cámara</p>
+          <div class="modelo3d__views-grid">
+            <button class="modelo3d__view-btn" type="button" data-m3d-view="0deg 90deg auto">Frontal</button>
+            <button class="modelo3d__view-btn" type="button" data-m3d-view="0deg 0deg auto">Superior</button>
+            <button class="modelo3d__view-btn" type="button" data-m3d-view="90deg 90deg auto">Lateral D</button>
+            <button class="modelo3d__view-btn" type="button" data-m3d-view="-90deg 90deg auto">Lateral I</button>
+            <button class="modelo3d__view-btn" type="button" data-m3d-view="0deg 180deg auto">Inferior</button>
+            <button class="modelo3d__view-btn" type="button" data-m3d-view="45deg 65deg auto">Persp.</button>
+          </div>
+        </div>
+        <div class="modelo3d__switch-group">
+          <div class="modelo3d__control-label">
+            <span>Rotación automática</span>
+          </div>
+          <label class="modelo3d__switch">
+            <input type="checkbox" data-m3d-autorotate checked />
+            <span class="modelo3d__slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <model-viewer
+        id="m3d-viewer"
+        src="modelo.glb"
+        alt="Render 3D de la compostera giratoria"
+        environment-image="neutral"
+        tone-mapping="agx"
+        exposure="0.55"
+        shadow-intensity="1.8"
+        shadow-softness="0.9"
+        field-of-view="22deg"
+        camera-orbit="45deg 65deg auto"
+        interpolation-decay="25"
+        camera-controls
+        touch-action="none"
+        max-polar-angle="180deg"
+        min-camera-orbit="auto auto 1m"
+        max-camera-orbit="auto auto 12m"
+        auto-rotate
+        auto-rotate-delay="500"
+        rotation-per-second="8deg"
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+      >
+        <div slot="poster" class="modelo3d__loading" data-m3d-loading>
+          <div class="modelo3d__spinner"></div>
+          <div class="modelo3d__loading-title">Cargando render</div>
+          <div class="modelo3d__progress-track">
+            <div class="modelo3d__progress-bar" data-m3d-progress></div>
+          </div>
+        </div>
+      </model-viewer>
+
+      <div class="modelo3d__switcher">
+        <button class="modelo3d__switch-btn" type="button" data-m3d-prev aria-label="Modelo anterior">
+          <i data-lucide="chevron-left" aria-hidden="true"></i>
+        </button>
+        <div class="modelo3d__model-label" data-m3d-label>Tapa cerrada</div>
+        <button class="modelo3d__switch-btn" type="button" data-m3d-next aria-label="Siguiente modelo">
+          <i data-lucide="chevron-right" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    (function () {
+      if (window.lucide) {
+        lucide.createIcons();
+      } else {
+        window.addEventListener("load", function () {
+          if (window.lucide) lucide.createIcons();
+        });
+      }
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var viewer = document.getElementById("m3d-viewer");
+      if (!viewer || !window.customElements) return;
+
+      function init() {
+      var progressBar = document.querySelector("[data-m3d-progress]");
+      var loading = document.querySelector("[data-m3d-loading]");
+      var prevBtn = document.querySelector("[data-m3d-prev]");
+      var nextBtn = document.querySelector("[data-m3d-next]");
+      var modelText = document.querySelector("[data-m3d-label]");
+      var configBtn = document.querySelector("[data-m3d-config-toggle]");
+      var configPanel = document.querySelector("[data-m3d-config-panel]");
+      var inputExposure = document.querySelector('[data-m3d-input="exposure"]');
+      var inputShadow = document.querySelector('[data-m3d-input="shadow"]');
+      var inputAutoRotate = document.querySelector("[data-m3d-autorotate]");
+      var valExposure = document.querySelector('[data-m3d-val="exposure"]');
+      var valShadow = document.querySelector('[data-m3d-val="shadow"]');
+
+      var models = [
+        { src: "modelo.glb", label: "Tapa cerrada" },
+        { src: "modelo2.glb", label: "Tapa abierta" }
+      ];
+      var currentModelIndex = 0;
+
+      function hideLoading() {
+        loading.classList.add("is-hidden");
+      }
+
+      configBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        configPanel.classList.toggle("is-open");
+      });
+
+      viewer.addEventListener("click", function () {
+        configPanel.classList.remove("is-open");
+      });
+
+      inputExposure.addEventListener("input", function (e) {
+        var val = e.target.value;
+        viewer.setAttribute("exposure", val);
+        valExposure.innerText = parseFloat(val).toFixed(2);
+      });
+
+      inputShadow.addEventListener("input", function (e) {
+        var val = e.target.value;
+        viewer.setAttribute("shadow-intensity", val);
+        valShadow.innerText = parseFloat(val).toFixed(2);
+      });
+
+      inputAutoRotate.addEventListener("change", function (e) {
+        if (e.target.checked) {
+          viewer.setAttribute("auto-rotate", "");
+        } else {
+          viewer.removeAttribute("auto-rotate");
+        }
+      });
+
+      document.querySelectorAll("[data-m3d-view]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          viewer.removeAttribute("auto-rotate");
+          inputAutoRotate.checked = false;
+          viewer.cameraOrbit = btn.getAttribute("data-m3d-view");
+          viewer.jumpCameraToGoal();
+        });
+      });
+
+      function changeModel(index) {
+        currentModelIndex = index;
+        loading.classList.remove("is-hidden");
+        progressBar.style.width = "0%";
+        viewer.src = models[currentModelIndex].src;
+        modelText.innerText = models[currentModelIndex].label;
+      }
+
+      prevBtn.addEventListener("click", function () {
+        changeModel(currentModelIndex - 1 < 0 ? models.length - 1 : currentModelIndex - 1);
+      });
+
+      nextBtn.addEventListener("click", function () {
+        changeModel((currentModelIndex + 1) % models.length);
+      });
+
+      viewer.addEventListener("progress", function (event) {
+        var progress = event.detail.totalProgress * 100;
+        progressBar.style.width = progress + "%";
+        if (progress >= 100) {
+          setTimeout(hideLoading, 200);
+        }
+      });
+
+      viewer.addEventListener("load", hideLoading);
+      }
+
+      if (customElements.get("model-viewer")) {
+        init();
+      } else {
+        customElements.whenDefined("model-viewer").then(init);
+      }
+    })();
+  </script>
+</body>
+</html>
